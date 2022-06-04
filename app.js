@@ -2,14 +2,27 @@ let data = document.getElementById('data')
 let add = document.getElementById('add')
 let box = document.querySelectorAll('.box')
 let drag = null;
+let dataPro;
 
+
+if (localStorage.MyNote != null) {
+    let dataPro = JSON.parse(MyNote);
+} else {
+    dataPro = [];
+}
 add.addEventListener('click', function() {
     if (data.value != '') {
         box[0].innerHTML += `
         <p draggable="true" class="incoming_data" >${data.value}</p>`
-        data.value = ''
+        let newdata = {
+            MyNote: data.value
+        }
+        dataPro.push(newdata)
+        localStorage.setItem('MyNotes', JSON.stringify(dataPro))
     }
+    data.value = '';
     dargItem();
+    showdata()
 })
 
 function dargItem() {
