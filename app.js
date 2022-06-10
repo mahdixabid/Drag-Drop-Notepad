@@ -2,27 +2,29 @@ let data = document.getElementById('data')
 let add = document.getElementById('add')
 let box = document.querySelectorAll('.box')
 let drag = null;
-let dataPro;
+let dataPro = [];
+const keyName = 'MyNotes'
 
+document.addEventListener('DOMContentLoaded', () => {
+    getItemsFromLS()
+})
 
-if (localStorage.MyNote != null) {
-    let dataPro = JSON.parse(MyNote);
-} else {
-    dataPro = [];
-}
 add.addEventListener('click', function() {
     if (data.value != '') {
+        const id = `${Date.now()}`
+
         box[0].innerHTML += `
-        <p draggable="true" class="incoming_data" >${data.value}</p>`
+        <p draggable="true" class="incoming_data" data-index="0" data-id=${id}>${data.value}</p>`
         let newdata = {
-            MyNote: data.value
+            id,
+            text: data.value,
+            box: 0
         }
         dataPro.push(newdata)
-        localStorage.setItem('MyNotes', JSON.stringify(dataPro))
+        localStorage.setItem(keyName, JSON.stringify(dataPro))
     }
     data.value = '';
     dargItem();
-    showdata()
 })
 
 function dargItem() {
@@ -48,11 +50,33 @@ function dargItem() {
                 this.style.background = 'white';
                 this.style.color = 'black';
             })
-            box.addEventListener('drop', function() {
+            box.addEventListener('drop', function(event) {
+                const boxIndex = event.toElement.dataset.index
+
+                const newDataPro = dataPro.map(el => el.id === drag.dataset.id ? {...el, box: Number(boxIndex) } : el)
+                dataPro = newDataPro
+                localStorage.setItem(keyName, JSON.stringify(newDataPro))
                 this.append(drag);
                 this.style.background = 'white';
                 this.style.color = 'black';
             })
         })
     })
+}
+
+function getItemsFromLS() {
+    try {
+        const response = localStorage.getItem(keyName);
+        const data = JSON.parse(response);
+
+        data.forEach(el => {
+            box[el.box].innerHTML += `
+            <p draggable="true" class="incoming_data" data-index=${el.box} data-id=${el.id} >${el.text}</p>`
+            dataPro.push(el)
+        })
+
+        dargItem();
+    } catch (err) {
+        throw new Error(err.message);
+    };
 }
